@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صوت الحقيقة - مجتمع خالٍ من الأخبار المضللة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+<base target="_blank">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-main">
+            <div class="logo" onclick="navigateTo('home')">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>صوت الحقيقة</h1>
+                    <span>مجتمع خالٍ من الأخبار المضللة</span>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a class="active" onclick="navigateTo('home')" data-page="home"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a onclick="navigateTo('articles')" data-page="articles"><i class="fas fa-newspaper"></i> المقالات</a></li>
+                <li><a onclick="navigateTo('missing')" data-page="missing"><i class="fas fa-search"></i> المفقودين</a></li>
+                <li><a onclick="navigateTo('stories')" data-page="stories"><i class="fas fa-heart"></i> قصص الناجين</a></li>
+                <li><a onclick="navigateTo('profile')" data-page="profile"><i class="fas fa-user"></i> بروفايلي</a></li>
+            </ul>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="publish-btn" onclick="openPublishModal()">
+                    <i class="fas fa-pen"></i>
+                    نشر خبر
+                </button>
+                <div class="user-profile" id="user-profile-header" onclick="navigateTo('profile')">
+                    <!-- User profile will be rendered here by JS -->
+                </div>
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <!-- Home Page -->
+            <div id="page-home" class="page active">
+                <!-- Hero News -->
+                <div class="hero-news fade-in">
+                    <div class="hero-news-img">
+                        <img src="https://images.unsplash.com/photo-1523995462485-3d171b5c8fa9?w=800" alt="خبر رئيسي">
+                    </div>
+                    <div class="hero-news-content">
+                        <span class="hero-badge">خبر عاجل</span>
+                        <h2 class="hero-title">جهود الإغاثة تتواصل في المناطق المتضررة رغم التحديات الأمنية</h2>
+                        <p class="hero-desc">
+                            تواصل فرق الإغاثة الدولية والمحلية عملها في المناطق المتضررة من الحرب، حيث تمكنت من إيصال المساعدات الإنسانية إلى آلاف العائلات النازحة رغم التحديات اللوجستية والأمنية.
+                        </p>
+                        <div class="hero-meta">
+                            <span><i class="fas fa-clock"></i> منذ 30 دقيقة</span>
+                            <span><i class="fas fa-eye"></i> 12,450 مشاهدة</span>
+                            <span><i class="fas fa-user"></i> أحمد الخالدي</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Latest News -->
+                <div class="section-card fade-in delay-1">
+                    <h3 class="section-title"><i class="fas fa-bolt"></i> آخر الأخبار</h3>
+                    <div class="news-grid" id="latest-news-grid"></div>
+                </div>
+
+                <!-- Stats Bar -->
+                <div class="section-card fade-in delay-2">
+                    <h3 class="section-title"><i class="fas fa-chart-bar"></i> إحصائيات الموقع</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="number">12,450</div>
+                            <div class="label">خبر موثق</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">8,230</div>
+                            <div class="label">مفقود تم العثور عليه</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">45,000</div>
+                            <div class="label">عضو نشط</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">99.2%</div>
+                            <div class="label">دقة الأخبار</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Articles Page -->
+            <div id="page-articles" class="page">
+                <div class="section-card">
+                    <h3 class="section-title"><i class="fas fa-newspaper"></i> المقالات والتحليلات</h3>
+                    <div class="news-grid" id="articles-grid"></div>
+                </div>
+            </div>
+
+            <!-- Article Detail Page -->
+            <div id="page-article-detail" class="page">
+                <button class="back-btn" onclick="navigateTo('articles')">
+                    <i class="fas fa-arrow-right"></i> العودة للمقالات
+                </button>
+                <div class="article-detail" id="article-detail-content"></div>
+            </div>
+
+            <!-- Missing Persons Page -->
+            <div id="page-missing" class="page">
+                <div class="section-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <h3 class="section-title" style="margin: 0;"><i class="fas fa-search"></i> المفقودين في الحرب</h3>
+                        <button class="publish-btn" onclick="openReportModal()">
+                            <i class="fas fa-exclamation-circle"></i>
+                            الإبلاغ عن مفقود
+                        </button>
+                    </div>
+                    <div class="missing-grid" id="missing-grid"></div>
+                </div>
+            </div>
+
+            <!-- Survivor Stories Page -->
+            <div id="page-stories" class="page">
+                <div class="section-card">
+                    <h3 class="section-title"><i class="fas fa-heart"></i> قصص الناجين</h3>
+                    <div id="stories-list"></div>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="page-profile" class="page">
+                <!-- Profile content will be rendered by JS -->
+            </div>
+        </div>
+
+        <!-- Live Chat Sidebar (YouTube Style) -->
+        <aside class="sidebar">
+            <div class="live-chat-container">
+                <div class="live-chat-header">
+                    <div class="live-chat-title">
+                        <i class="fas fa-comments"></i>
+                        الدردشة المباشرة
+                    </div>
+                    <span class="live-badge">
+                        <span class="live-dot"></span>
+                        مباشر
+                    </span>
+                    <button class="live-chat-settings" onclick="showToast('الإعدادات قريباً')">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+
+                <div class="chat-rules">
+                    <i class="fas fa-shield-alt"></i> كن محترماً في تعبيرك. الرسائل المخالفة سيتم حذفها.
+                </div>
+
+                <div class="live-chat-messages" id="live-chat-messages">
+                    <!-- Chat messages rendered by JS -->
+                </div>
+
+                <button class="scroll-bottom-btn" id="scroll-bottom-btn" onclick="scrollToBottom()">
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+
+                <div class="new-messages-indicator" id="new-messages-indicator" onclick="scrollToBottom()">
+                    <i class="fas fa-chevron-down"></i>
+                    رسائل جديدة
+                </div>
+
+                <div class="live-chat-input-area">
+                    <div class="chat-input-wrapper">
+                        <button class="chat-emoji-btn" onclick="showToast('الإيموجي قريباً')">
+                            <i class="far fa-smile"></i>
+                        </button>
+                        <input 
+                            type="text" 
+                            class="chat-input" 
+                            id="chat-input" 
+                            placeholder="اكتب رسالتك..."
+                            onkeypress="handleChatKeyPress(event)"
+                        >
+                        <button class="chat-send-btn" onclick="addChatMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Publish Modal -->
+    <div class="modal-overlay" id="publish-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-pen"></i> نشر خبر أو مقال</h2>
+                <button class="modal-close" onclick="closeModal('publish-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="submitPublish(event)">
+                    <div class="form-group">
+                        <label>نوع المنشور <span>*</span></label>
+                        <select class="form-control" required>
+                            <option value="">اختر النوع</option>
+                            <option value="news">خبر عاجل</option>
+                            <option value="article">مقال تحليلي</option>
+                            <option value="report">تقرير ميداني</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>العنوان <span>*</span></label>
+                        <input type="text" class="form-control" placeholder="عنوان الخبر..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>المحتوى <span>*</span></label>
+                        <textarea class="form-control" placeholder="محتوى الخبر..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>الصورة</label>
+                        <div class="file-upload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>اسحب الصورة هنا أو انقر للاختيار</p>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i> نشر المنشور
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Missing Modal -->
+    <div class="modal-overlay" id="report-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-circle"></i> الإبلاغ عن مفقود</h2>
+                <button class="modal-close" onclick="closeModal('report-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="submitReport(event)">
+                    <div class="form-group">
+                        <label>الاسم الكامل <span>*</span></label>
+                        <input type="text" class="form-control" placeholder="اسم المفقود..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>العمر</label>
+                        <input type="number" class="form-control" placeholder="العمر...">
+                    </div>
+                    <div class="form-group">
+                        <label>آخر مكان شوهد فيه <span>*</span></label>
+                        <input type="text" class="form-control" placeholder="المنطقة / المكان..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>تاريخ الاختفاء <span>*</span></label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>معلومات التواصل <span>*</span></label>
+                        <input type="text" class="form-control" placeholder="رقم الهاتف أو البريد..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>وصف المفقود</label>
+                        <textarea class="form-control" placeholder="وصف الملابس، العلامات المميزة..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>صورة المفقود</label>
+                        <div class="file-upload">
+                            <i class="fas fa-camera"></i>
+                            <p>أضف صورة حديثة للمفقود</p>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i> إرسال البلاغ
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3><i class="fas fa-shield-alt"></i> صوت الحقيقة</h3>
+                <p>منصة مجتمعية تهدف إلى نشر الأخبار الموثوقة والدقيقة في ظل الأوضاع الراهنة. نؤمن بأن الحقيقة حق للجميع وأن الوعي هو أول خطوة نحو التغيير.</p>
+            </div>
+            <div class="footer-links">
+                <h4>روابط سريعة</h4>
+                <ul>
+                    <li><a href="#" onclick="navigateTo('home')">الرئيسية</a></li>
+                    <li><a href="#" onclick="navigateTo('articles')">المقالات</a></li>
+                    <li><a href="#" onclick="navigateTo('missing')">المفقودين</a></li>
+                    <li><a href="#" onclick="navigateTo('stories')">قصص الناجين</a></li>
+                    <li><a href="#" onclick="navigateTo('profile')">بروفايلي</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>المصادر</h4>
+                <ul>
+                    <li><a href="#">كيف نتحقق من الأخبار</a></li>
+                    <li><a href="#">دليل النشر الآمن</a></li>
+                    <li><a href="#">الدعم النفسي</a></li>
+                    <li><a href="#">الإبلاغ عن محتوى مضلل</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>تواصل معنا</h4>
+                <ul>
+                    <li><a href="#"><i class="fas fa-envelope"></i> contact@sawt.com</a></li>
+                    <li><a href="#"><i class="fas fa-phone"></i> دعم الطوارئ 24/7</a></li>
+                    <li><a href="#"><i class="fas fa-map-marker-alt"></i> غزة - فلسطين</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>صوت الحقيقة 2024 - جميع الحقوق محفوظة | منصة مجتمعية للأخبار الموثوقة</p>
+        </div>
+    </footer>
+
+    <!-- Floating Verification Button -->
+    <button class="float-btn" id="float-verification-btn" onclick="openVerificationModal()" onmouseenter="showFloatTooltip()">
+        <i class="fas fa-shield-alt"></i>
+    </button>
+
+    <div class="float-btn-tooltip" id="float-btn-tooltip">
+        <i class="fas fa-shield-alt" style="color: var(--primary);"></i>
+        أدوات التحقق والبحث العكسي
+    </div>
+
+    <!-- Verification Tools Modal -->
+    <div class="modal-overlay verification-modal" id="verification-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-shield-alt" style="color: var(--primary);"></i> أدوات التحقق والبحث العكسي</h2>
+                <button class="modal-close" onclick="closeModal('verification-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="verification-tabs">
+                    <button class="verification-tab active" onclick="switchVerificationTab('reverse-search', this)">
+                        <i class="fas fa-search"></i> بحث عكسي
+                    </button>
+                    <button class="verification-tab" onclick="switchVerificationTab('metadata', this)">
+                        <i class="fas fa-fingerprint"></i> تحليل EXIF
+                    </button>
+                </div>
+                <div id="verification-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
