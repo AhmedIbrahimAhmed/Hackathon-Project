@@ -862,6 +862,431 @@ function showFloatTooltip() {
 }
 
 // Update init to include floating button
+
+
+// ========== NOTIFICATIONS ==========
+let notifications = [];
+let unreadCount = 0;
+
+function loadNotifications() {
+    const saved = localStorage.getItem('sawt_notifications');
+    if (saved) {
+        notifications = JSON.parse(saved);
+    } else {
+        notifications = [...notificationsData];
+    }
+    updateUnreadCount();
+    renderNotifications();
+}
+
+function saveNotifications() {
+    localStorage.setItem('sawt_notifications', JSON.stringify(notifications));
+}
+
+function updateUnreadCount() {
+    unreadCount = notifications.filter(n => !n.read).length;
+    const btn = document.getElementById('notifications-btn');
+    if (btn) {
+        if (unreadCount > 0) {
+            btn.classList.add('has-unread');
+            btn.setAttribute('data-count', unreadCount);
+        } else {
+            btn.classList.remove('has-unread');
+            btn.removeAttribute('data-count');
+        }
+    }
+}
+
+function renderNotifications() {
+    const list = document.getElementById('notifications-list');
+    if (!list) return;
+
+    if (notifications.length === 0) {
+        list.innerHTML = `
+            <div class="notifications-empty">
+                <i class="fas fa-bell-slash"></i>
+                <p>لا توجد إشعارات</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = notifications.map(n => `
+        <div class="notification-item ${n.read ? '' : 'unread'}" onclick="handleNotificationClick(${n.id})">
+            <div class="notification-icon ${n.type}">
+                <i class="fas ${getNotificationIcon(n.type)}"></i>
+            </div>
+            <div class="notification-content">
+                <h4>${n.title}</h4>
+                <p>${n.message}</p>
+                <div class="notification-time">${n.time}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'post_banned': return 'fa-ban';
+        case 'post_approved': return 'fa-check-circle';
+        case 'new_comment': return 'fa-comment';
+        default: return 'fa-bell';
+    }
+}
+
+function handleNotificationClick(id) {
+    const notification = notifications.find(n => n.id === id);
+    if (notification) {
+        notification.read = true;
+        saveNotifications();
+        updateUnreadCount();
+        renderNotifications();
+        if (notification.link) {
+            navigateTo(notification.link);
+        }
+    }
+    toggleNotifications();
+}
+
+function markAllNotificationsRead(e) {
+    e.stopPropagation();
+    notifications.forEach(n => n.read = true);
+    saveNotifications();
+    updateUnreadCount();
+    renderNotifications();
+    showToast('تم تحديد جميع الإشعارات كمقروءة');
+}
+
+function toggleNotifications(e) {
+    if (e) e.stopPropagation();
+    const wrapper = document.getElementById('notifications-wrapper');
+    wrapper.classList.toggle('active');
+}
+
+function addNotification(type, title, message, link) {
+    const newNotif = {
+        id: Date.now(),
+        type: type,
+        title: title,
+        message: message,
+        time: 'الآن',
+        read: false,
+        link: link || 'home'
+    };
+    notifications.unshift(newNotif);
+    saveNotifications();
+    updateUnreadCount();
+    renderNotifications();
+    showToast(title);
+}
+
+// Close notifications on outside click
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('notifications-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        wrapper.classList.remove('active');
+    }
+});
+
+
+// ========== RESPONSE AREA (Outside Chat) ==========
+let responseBoxes = [];
+let myReplies = [];
+
+function loadResponseBoxes() {
+    const saved = localStorage.getItem('sawt_response_boxes');
+    if (saved) {
+        responseBoxes = JSON.parse(saved);
+    } else {
+        responseBoxes = [...responseBoxesData];
+    }
+
+    const savedReplies = localStorage.getItem('sawt_my_replies');
+    if (savedReplies) {
+        myReplies = JSON.parse(savedReplies);
+    }
+
+    renderResponseArea();
+    renderMyReplies();
+    updateResponseAreaCount();
+}
+
+function saveResponseBoxes() {
+    localStorage.setItem('sawt_response_boxes', JSON.stringify(responseBoxes));
+}
+
+function saveMyReplies() {
+    localStorage.setItem('sawt_my_replies', JSON.stringify(myReplies));
+}
+
+function updateResponseAreaCount() {
+    const totalReplies = responseBoxes.reduce((sum, box) => sum + (box.replies ? box.replies.length : 0), 0);
+    const countEl = document.getElementById('response-area-count');
+    if (countEl) countEl.textContent = totalReplies;
+
+    const myCountEl = document.getElementById('my-replies-count');
+    if (myCountEl) myCountEl.textContent = myReplies.length;
+}
+
+function renderResponseArea() {
+    const body = document.getElementById('response-area-body');
+    if (!body) return;
+
+    if (responseBoxes.length === 0) {
+        body.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: var(--text-muted);">
+                <i class="fas fa-box-open" style="font-size: 30px; margin-bottom: 10px; opacity: 0.3;"></i>
+                <p>لا توجد صناديق ردود</p>
+            </div>
+        `;
+        return;
+    }
+
+    body.innerHTML = responseBoxes.map(box => `
+        <div class="response-box-card" data-box-id="${box.id}">
+            <div class="response-box-header">
+                <img src="${box.avatar}" alt="${box.author}" class="response-box-avatar">
+                <span class="response-box-author">${box.author}</span>
+                <span class="response-box-time">${box.time}</span>
+            </div>
+            <div class="response-box-text">${box.text}</div>
+            <button class="respond-btn" onclick="openReplyModal(${box.id})">
+                <i class="fas fa-reply"></i> Respond
+            </button>
+            ${box.replies && box.replies.length > 0 ? `
+                <div class="replies-count">
+                    <i class="fas fa-comments"></i> ${box.replies.length} رد مجهول
+                </div>
+                <div class="anonymous-replies">
+                    ${box.replies.map(r => `
+                        <div class="anonymous-reply">
+                            <div class="anonymous-reply-avatar">
+                                <i class="fas fa-user-secret"></i>
+                            </div>
+                            <div class="anonymous-reply-content">
+                                <div class="anonymous-reply-text">${r.text}</div>
+                                <div class="anonymous-reply-time">${r.time}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+function toggleResponseArea() {
+    const container = document.getElementById('response-area-container');
+    container.classList.toggle('collapsed');
+}
+
+function openReplyModal(boxId) {
+    const box = responseBoxes.find(b => b.id === boxId);
+    if (!box) return;
+
+    // Create inline reply input
+    const card = document.querySelector(`.response-box-card[data-box-id="${boxId}"]`);
+    if (!card) return;
+
+    // Remove any existing reply inputs
+    const existing = card.querySelector('.response-reply-input');
+    if (existing) {
+        existing.remove();
+        return;
+    }
+
+    const replyHTML = `
+        <div class="response-reply-input">
+            <input type="text" id="reply-input-${boxId}" placeholder="اكتب ردك المجهول..." 
+                onkeypress="if(event.key==='Enter')submitAnonymousReply(${boxId})">
+            <button onclick="submitAnonymousReply(${boxId})">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    `;
+    card.insertAdjacentHTML('beforeend', replyHTML);
+    document.getElementById(`reply-input-${boxId}`).focus();
+}
+
+function submitAnonymousReply(boxId) {
+    const input = document.getElementById(`reply-input-${boxId}`);
+    const text = input.value.trim();
+    if (!text) return;
+
+    const box = responseBoxes.find(b => b.id === boxId);
+    if (!box) return;
+
+    const newReply = {
+        id: Date.now(),
+        text: text,
+        time: 'الآن'
+    };
+
+    if (!box.replies) box.replies = [];
+    box.replies.push(newReply);
+
+    // Save to my replies (for the journalist to see)
+    myReplies.push({
+        boxId: boxId,
+        boxText: box.text.substring(0, 50) + '...',
+        replyText: text,
+        time: 'الآن'
+    });
+
+    saveResponseBoxes();
+    saveMyReplies();
+    renderResponseArea();
+    renderMyReplies();
+    updateResponseAreaCount();
+    showToast('تم إرسال الرد المجهول!');
+}
+
+function renderMyReplies() {
+    const list = document.getElementById('my-replies-list');
+    if (!list) return;
+
+    if (myReplies.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <i class="fas fa-inbox" style="font-size: 40px; margin-bottom: 10px; opacity: 0.3;"></i>
+                <p>لا توجد ردود على صناديقك</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = myReplies.map(r => `
+        <div class="my-reply-item">
+            <h4><i class="fas fa-box" style="color: var(--primary);"></i> ${r.boxText}</h4>
+            <p>${r.replyText}</p>
+            <div class="reply-meta">
+                <span><i class="fas fa-user-secret"></i> مجهول</span>
+                <span><i class="fas fa-clock"></i> ${r.time}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function switchChatTab(tab, btn) {
+    document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+
+    const messages = document.getElementById('live-chat-messages');
+    const myReplies = document.getElementById('my-replies-list');
+
+    if (tab === 'general') {
+        messages.style.display = 'flex';
+        myReplies.style.display = 'none';
+    } else {
+        messages.style.display = 'none';
+        myReplies.style.display = 'block';
+    }
+}
+
+
+// ========== RESPONSE BOX IN CHAT ==========
+function renderResponseBoxesInChat() {
+    const container = document.getElementById('live-chat-messages');
+    if (!container || responseBoxes.length === 0) return;
+
+    // Insert response boxes at the top of chat
+    const boxesHTML = responseBoxes.map(box => `
+        <div class="chat-response-box" data-box-id="${box.id}">
+            <div class="response-box-header">
+                <img src="${box.avatar}" alt="${box.author}" class="response-box-avatar">
+                <span class="response-box-author">${box.author}</span>
+                <span class="response-box-time">${box.time}</span>
+            </div>
+            <div class="response-box-text">${box.text}</div>
+            <button class="respond-btn" onclick="openChatReply(${box.id})">
+                <i class="fas fa-reply"></i> Respond
+            </button>
+            <div id="chat-reply-area-${box.id}"></div>
+        </div>
+    `).join('');
+
+    // Prepend to existing messages
+    const existing = container.innerHTML;
+    container.innerHTML = boxesHTML + existing;
+}
+
+function openChatReply(boxId) {
+    const area = document.getElementById(`chat-reply-area-${boxId}`);
+    if (!area) return;
+
+    if (area.innerHTML) {
+        area.innerHTML = '';
+        return;
+    }
+
+    area.innerHTML = `
+        <div class="response-reply-input" style="margin-top: 10px;">
+            <input type="text" id="chat-reply-input-${boxId}" placeholder="اكتب ردك المجهول..."
+                onkeypress="if(event.key==='Enter')submitChatReply(${boxId})">
+            <button onclick="submitChatReply(${boxId})">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    `;
+    document.getElementById(`chat-reply-input-${boxId}`).focus();
+}
+
+function submitChatReply(boxId) {
+    const input = document.getElementById(`chat-reply-input-${boxId}`);
+    const text = input.value.trim();
+    if (!text) return;
+
+    const box = responseBoxes.find(b => b.id === boxId);
+    if (!box) return;
+
+    const newReply = {
+        id: Date.now(),
+        text: text,
+        time: 'الآن'
+    };
+
+    if (!box.replies) box.replies = [];
+    box.replies.push(newReply);
+
+    myReplies.push({
+        boxId: boxId,
+        boxText: box.text.substring(0, 50) + '...',
+        replyText: text,
+        time: 'الآن'
+    });
+
+    saveResponseBoxes();
+    saveMyReplies();
+    renderResponseArea();
+    renderMyReplies();
+    updateResponseAreaCount();
+
+    // Close reply input
+    const area = document.getElementById(`chat-reply-area-${boxId}`);
+    if (area) area.innerHTML = '';
+
+    showToast('تم إرسال الرد المجهول!');
+}
+
+
+// ========== CREATE RESPONSE BOX (for journalist) ==========
+function createResponseBox(text) {
+    const newBox = {
+        id: Date.now(),
+        author: currentUser.name,
+        avatar: currentUser.avatar,
+        text: text,
+        time: 'الآن',
+        replies: []
+    };
+    responseBoxes.unshift(newBox);
+    saveResponseBoxes();
+    renderResponseArea();
+    renderResponseBoxesInChat();
+    updateResponseAreaCount();
+    showToast('تم إنشاء صندوق الردود!');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     renderUserHeader();
     renderNews();
@@ -872,6 +1297,9 @@ document.addEventListener('DOMContentLoaded', function() {
     renderTrending();
     renderProfile();
     renderLiveChat();
+    loadNotifications();
+    loadResponseBoxes();
+    renderResponseBoxesInChat();
     updateTime();
     setInterval(updateTime, 60000);
 
