@@ -390,4 +390,62 @@ const verificationTools = {
         }
     ],
 
-};
+}
+
+// ========== NOTIFICATIONS DATA ==========
+const notificationsData = [
+    {
+        id: 1,
+        type: 'post_banned',
+        title: 'تم حظر منشورك',
+        message: 'تم حظر منشور "تقرير ميداني: الوضع الإنساني في الشمال" لعدم مطابقته لمعايير المنصة.',
+        time: 'منذ 5 دقائق',
+        read: false,
+        link: 'profile'
+    },
+    {
+        id: 2,
+        type: 'post_approved',
+        title: 'تمت الموافقة على منشورك',
+        message: 'تمت الموافقة على منشور "قصة نجاة: طفل عمره 5 سنوات" وهو الآن منشور.',
+        time: 'منذ ساعة',
+        read: false,
+        link: 'profile'
+    },
+    {
+        id: 3,
+        type: 'new_comment',
+        title: 'تعليق جديد على مقالك',
+        message: 'علق خالد محمود على مقالك "الإعلام في زمن الحرب"',
+        time: 'منذ ساعتين',
+        read: true,
+        link: 'articles'
+    }
+];
+
+// ========== RESPONSE BOXES DATA ==========
+const responseBoxesData = [
+    {
+        id: 1,
+        author: "أحمد الخالدي",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
+        text: "🎉 بنحتفل اليوم بإطلاق مبادرة جديدة للدعم النفسي للأطفال النازحين. نحتاج دعمكم واقتراحاتكم!",
+        time: "منذ 10 دقائق",
+        replies: [
+            { id: 101, text: "فكرة رائعة! كيف نساعد؟", time: "منذ 8 دقائق" },
+            { id: 102, text: "أنا طبيب نفسي وأقدر أساعد", time: "منذ 6 دقائق" },
+            { id: 103, text: "الله يوفقكم", time: "منذ 3 دقائق" }
+        ]
+    },
+    {
+        id: 2,
+        author: "أحمد الخالدي",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
+        text: "📢 تحديث عاجل: قافلة إغاثة جديدة وصلت إلى رفح. من يحتاج مساعدات عاجلة يراسلني خاص.",
+        time: "منذ 30 دقيقة",
+        replies: [
+            { id: 201, text: "عائلة في تل السلطان بحاجة دواء", time: "منذ 25 دقيقة" },
+            { id: 202, text: "أنا في الشمال ومحتاج مساعدة", time: "منذ 20 دقيقة" }
+        ]
+    }
+];
